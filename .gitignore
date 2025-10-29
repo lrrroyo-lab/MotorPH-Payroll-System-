@@ -1,0 +1,39 @@
+# ---------------------------
+# NetBeans & Java ignores
+# ---------------------------
+
+# Build output
+/build/
+/dist/
+/nbbuild/
+/nbdist/
+/nbproject/private/
+/build.xml
+/dist.jar
+
+# IDE metadata
+.nb-gradle/
+nbproject/private/
+*.class
+*.jar
+*.war
+*.ear
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment or config files
+.env
+*.csv
+
+# Miscellaneous
+*.iml
+.idea/
+.vscode/
