@@ -8,6 +8,9 @@ import java.util.Scanner;
 import com.opencsv.CSVReader;
 import java.io.FileReader;
 import java.util.List;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 
 /**
@@ -16,30 +19,6 @@ import java.util.List;
  */
 public class MotorPHPayrollSystem {
 
-/*
-    static  boolean loggedIn = false;
-    static Scanner scan = new Scanner(System.in);
-    static int choice = -1;
-    static String empNumber = "10000";
-    static String empLastName = "Garcia";
-    static String empFirstName = "Manuel III";
-    static String empDob = "10/11/1983";
-    static String address = "Valero Carpark Building Valero Street 1227, Makati City";
-    static String phoneNumber = "966-860-270";
-    static String sssNumber = "44-4506057-3";
-    static String philHealthNumber = "9820126853951";
-    static String tinNumber = "442-605-657-000";
-    static String pagIbigNumber = "691295330870";
-    static String empStatus = "Regular";
-    static String empPosition = "Chief Executive Officer";
-    static String password = "password";    
-    static double basicSalary = 90000;
-    static double riceSubsidy = 1500;
-    static double phoneAllowance = 2000;
-    static double clothingAllowance = 1500;
-    static double semiMonthlyRate = 45000;
-    static double dailyRate = 535.71;
-*/   
     static List<String[]> records;  // all rows from CSV
     static String csvFile = "MotorPH_Employee Data.csv";
     static Scanner scan = new Scanner(System.in);
@@ -93,10 +72,51 @@ public class MotorPHPayrollSystem {
                 if (emp == null) {
                      System.out.println("Employee not found!");
                 } else {
-                    showEmployeeDetails(emp);
-                    computePayroll(emp);
+                //    showEmployeeDetails(emp);
+                 //   computePayroll(emp);
+                    mainMenu(empNo, emp);
                 }    
         }        
+        
+        public static void mainMenu(String empNo, String[] emp){
+        
+            
+            Scanner scan = new Scanner(System.in);
+            int choice = -1;
+   
+            while (choice != 0) {
+                System.out.println("================================================");
+                System.out.println("MOTORPH PAYROLL SYSTEM");
+                System.out.println("================================================");
+                System.out.println("[1] PROFILE");
+                System.out.println("[2] PAYSLIP");
+                System.out.println("[3] ATTENDANCE");
+                System.out.println("[0] Lgout");
+                System.out.println("=================================================");
+                System.out.println("ENTER SELECTION:  ");
+                choice = scan.nextInt();
+                scan.nextLine();
+
+                   switch (choice){
+                        case 1: showEmployeeDetails(emp);
+                        System.out.print("\nPress ENTER to return to the menu...");
+                        scan.nextLine(); // wait for user
+                        break;
+                   
+                        case 2: computePayroll(emp, empNo); 
+                        System.out.print("\nPress ENTER to return to the menu...");
+                        scan.nextLine(); // wait for user
+                        break;
+                        case 3: attendance(empNo);
+                        System.out.print("\nPress ENTER to return to the menu...");
+                        scan.nextLine(); // wait for user
+                        break;
+                        case 0: System.out.println("Logging Out..."); break;
+                        default: System.out.println("Invalid option!");
+                    }
+            
+            }       
+        }    
         
         public static String[] findEmployee(String empNo) {
             
@@ -109,8 +129,7 @@ public class MotorPHPayrollSystem {
             }
             return null;    
         }
-        
-        
+         
         public static void showEmployeeDetails(String[] row) {
             
             System.out.println("Login successful!");
@@ -128,9 +147,102 @@ public class MotorPHPayrollSystem {
             System.out.println("Hourly Rate: " + row[18]);
             System.out.println("--------------------------------------------------");
            
+        }      
+        public static double[] getAttendance (String empNo) {
+        
+             int daysPresent = 0;
+             double totalOvertime = 0.0;
+             DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("H:mm");
+             
+            try (CSVReader reader = new CSVReader(new FileReader("attendance.csv"))) {
+            String[] line;
+            reader.readNext(); 
+                
+                while ((line = reader.readNext()) != null) {
+                    String emp = line[0].trim();
+                    String login = line[4].trim();
+                    String logout = line[5].trim();
+                    
+                    if (emp.equals(empNo)) {
+                        if (!login.isEmpty() && !logout.isEmpty()) {
+                        daysPresent++;
+                        
+                            LocalTime loginTime = LocalTime.parse(login, timeFormatter);
+                            LocalTime logoutTime = LocalTime.parse(logout, timeFormatter);
+                            
+                            
+                            long totalMinutes = ChronoUnit.MINUTES.between(loginTime, logoutTime);
+                            double hoursWorked = totalMinutes / 60.0;
+                            
+                       //     double hoursWorked = logoutTime - loginTime;
+                       
+                            if (hoursWorked > 9) {
+                            totalOvertime += (hoursWorked - 9);
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            
+            return new double[] { daysPresent, totalOvertime };
         }
-    
-        public static void computePayroll(String[] emp){
+        
+        public static void attendance (String empNo) {
+        
+            int daysPresent = 0;
+            int daysAbsent = 0;
+            String empNumber = "";
+            String firstName = "";
+            String lastName = ""; 
+             
+            try (CSVReader reader = new CSVReader(new FileReader("attendance.csv"))) {
+            String[] line;
+            reader.readNext(); 
+                
+                while ((line = reader.readNext()) != null) {
+                    String emp = line[0].trim();
+                    String fName = line[1].trim();
+                    String lName = line[2].trim();
+                    String login = line[4].trim();
+                    String logout = line[5].trim();
+                   
+                    
+                    if (emp.equals(empNo)) {
+                                              
+                        empNumber = emp;
+                        firstName = fName;
+                        lastName = lName;
+                        
+                        if (!login.isEmpty() && !logout.isEmpty()) {
+                        daysPresent++;
+                        }else{
+                            daysAbsent++;
+                            }
+                        }    
+                }
+                
+                if (!empNumber.isEmpty()) {
+                    System.out.println("=========================================");
+                    System.out.println("         ATTENDANCE DETAILS");
+                    System.out.println("=========================================");
+                    System.out.println("Employee #: " + empNumber);
+                    System.out.println("Name: " + firstName + " " + lastName);
+                    System.out.println("Number of Days Present : " + daysPresent);
+                    System.out.println("Number of Days Absent : " + daysAbsent);
+                    System.out.println("=========================================");
+                } else {
+                    System.out.println("No attendance records found for Employee #" + empNo);
+                    }
+                
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+   
+        }
+        
+        public static void computePayroll(String[] emp, String empNo){
             
             double basicSalary = Double.parseDouble(emp[13].replace(",", "").trim());
             double riceSubsidy = Double.parseDouble(emp[14].replace(",", "").trim());
@@ -140,26 +252,23 @@ public class MotorPHPayrollSystem {
             double hourlyRate = Double.parseDouble(emp[18].replace(",", "").trim());
             
             
-            System.out.println("Number of days worked : ");
-            int daysWorked = scan.nextInt();
-            scan.nextLine();
-            System.out.println("Number of overtime hours : ");
-            int overtime = scan.nextInt();
-            scan.nextLine();
+            double[] attendance = getAttendance(empNo);
+            int daysWorked = (int) attendance[0];
+            double overtimeHours = attendance[1];
             
             double dailyRate = basicSalary / 22; //assumed workdays per month
             double grossPay = (daysWorked * dailyRate)
                                 + riceSubsidy + phoneAllowance + clothingAllowance 
-                                + (overtime * hourlyRate * 1.25); 
+                                + (overtimeHours * hourlyRate * 1.25); 
             
             double totalDeductions = sss(grossPay) + philHealth(basicSalary) + pagIbig(basicSalary) + tax(grossPay); 
             
             double netPay = grossPay - totalDeductions;
 
-            showPayslip(emp, daysWorked, overtime, grossPay, totalDeductions, netPay);
+            showPayslip(emp, daysWorked, overtimeHours, grossPay, totalDeductions, netPay);
         }
 
-        public static void showPayslip(String[] emp, int daysWorked, int overtime, double grossPay, 
+        public static void showPayslip(String[] emp, int daysWorked, double overtimeHours, double grossPay, 
                                         double totalDeductions, double netPay){
         
             System.out.println("\n================== PAYSLIP ==================");
@@ -167,13 +276,13 @@ public class MotorPHPayrollSystem {
             System.out.println("Name: " + emp[2] + " " + emp[1]);
             System.out.println("Position: " + emp[11]);
             System.out.println("Days Worked: " + daysWorked);
-            System.out.println("Overtime Hours: " + overtime);
+            System.out.println("Overtime Hours: " + overtimeHours);
             System.out.printf("Gross Pay: %.2f%n", grossPay);
             System.out.printf("Total Deductions: %.2f%n", totalDeductions);
             System.out.printf("Net Pay: %.2f%n", netPay);
             System.out.println("=============================================");
         }
-
+    
         public static double sss(double grossPay){
             
             double sssDeductions = 0;
@@ -318,7 +427,5 @@ public class MotorPHPayrollSystem {
                 
                 return withholdingTax;        
             }  
-
 }
-        
  
