@@ -11,6 +11,8 @@ import java.util.List;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import com.opencsv.CSVWriter;
+import java.io.FileWriter;
 
 
 /**
@@ -84,13 +86,14 @@ public class MotorPHPayrollSystem {
             Scanner scan = new Scanner(System.in);
             int choice = -1;
    
-            while (choice != 0) {
+             while (choice != 0) {
                 System.out.println("================================================");
                 System.out.println("MOTORPH PAYROLL SYSTEM");
                 System.out.println("================================================");
                 System.out.println("[1] PROFILE");
                 System.out.println("[2] PAYSLIP");
                 System.out.println("[3] ATTENDANCE");
+                System.out.println("[4] ADMIN MODULE");
                 System.out.println("[0] Lgout");
                 System.out.println("=================================================");
                 System.out.println("ENTER SELECTION:  ");
@@ -111,11 +114,15 @@ public class MotorPHPayrollSystem {
                         System.out.print("\nPress ENTER to return to the menu...");
                         scan.nextLine(); // wait for user
                         break;
+                        case 4: adminModule(empNo, emp);
+                        System.out.print("\nPress ENTER to return to the menu...");
+                        scan.nextLine(); // wait for user
+                        break;
                         case 0: System.out.println("Logging Out..."); break;
                         default: System.out.println("Invalid option!");
                     }
             
-            }       
+            }             
         }    
         
         public static String[] findEmployee(String empNo) {
@@ -426,6 +433,171 @@ public class MotorPHPayrollSystem {
                       }   
                 
                 return withholdingTax;        
-            }  
-}
+            }
+        
+        public static void adminModule(String empNo, String[] emp){
+        
+            
+            Scanner scan = new Scanner(System.in);
+            int choice = -1;
+   
+            while (choice != 0) {
+                System.out.println("================================================");
+                System.out.println("ADMIN MODULE");
+                System.out.println("================================================");
+                System.out.println("[1] ADD EMPLOYEE");
+                System.out.println("[2] DELETE EMPLOYEE");
+                System.out.println("[3] UPDATE PROFILE");
+                System.out.println("[4] MAIN MENU");
+                System.out.println("=================================================");
+                System.out.println("ENTER SELECTION:  ");
+                choice = scan.nextInt();
+                scan.nextLine();
+
+                   switch (choice){
+                        case 1: addEmployee();
+                        System.out.print("\nPress ENTER to return to the menu...");
+                        scan.nextLine(); // wait for user
+                        break;
+                   
+                        case 2: deleteEmployee(); 
+                        System.out.print("\nPress ENTER to return to the menu...");
+                        scan.nextLine(); // wait for user
+                        break;
+                        case 3: updateProfile();
+                        System.out.print("\nPress ENTER to return to the menu...");
+                        scan.nextLine(); // wait for user
+                        break;
+                        case 4: mainMenu(empNo, emp);
+                        System.out.print("\nPress ENTER to return to the menu...");
+                        scan.nextLine(); // wait for user
+                        break;
+                        case 0: System.out.println("Logging Out..."); break;
+                        default: System.out.println("Invalid option!");
+                    } 
+            
+            }       
+        }
+        
+        public static void addEmployee(){
+            
+            boolean found = false;
+            
+            Scanner scan = new Scanner(System.in);
+            System.out.print("Enter Employee ID: ");
+            String empNo = scan.nextLine();
+
+                
+                
+                for (String[] row : records){
+                    if (row[0].equalsIgnoreCase(empNo)){
+                     
+                        found = true;
+                        break;
+                    }
+                    
+                }
+            
+                if (found) {
+                System.out.println("Employee ID already exists. Try updating instead.");
+                return;
+                }else {
+                
+                    System.out.print("Enter Employee Last Name: ");
+                    String lastName = scan.nextLine();
+                    System.out.print("Enter Employee First Name: ");
+                    String firstName = scan.nextLine();
+
+                    String[] newEmployee = {empNo, lastName, firstName};
+                    records.add(newEmployee);
+                    System.out.println("Employee added successfully:  \nFirst Name : " + firstName +  "\nLsdt Nsme: " + lastName   + "Rmployee ID: " + empNo);
+               
+                        try (CSVWriter writer = new CSVWriter (new FileWriter(csvFile))) {
+                            writer.writeAll(records);       
+                            }catch (Exception e){
+                                 System.out.println("Error saving records: " + e.getMessage());
+                    
+                            }
+                
+                }    
+    
+        }
+
+   
+        public static void deleteEmployee() {
+            Scanner scan = new Scanner(System.in);
+            System.out.print("Enter Employee ID to delete: ");
+            String empNo = scan.nextLine();
+
+        //    findEmployee(empNo); 
+            
+            for (int i = 1; i < records.size(); i++) {
+                if (records.get(i)[0].equalsIgnoreCase(empNo)) {
+                    records.remove(i);
+                    
+                    if (empNo == null ){
+                    
+                        System.out.println("Employee not found.");
+                        
+                    } else {       
+                   
+                        
+                    System.out.println("Employee ID " + empNo + " removed successfully.");
+                
+                    try (CSVWriter writer = new CSVWriter (new FileWriter(csvFile))) {
+                        writer.writeAll(records);       
+                        }catch (Exception e){
+                        System.out.println("Error saving records: " + e.getMessage());
+                    
+                        }
+                        }
+                    }
+                }
+     
+        }
+        
+        public static void updateProfile(){
+        
+            Scanner scan = new Scanner(System.in);
+            
+            System.out.print("Enter Employee ID to update: ");
+            String empNo = scan.nextLine();
+            
+            boolean found = false;
+            
+
+                for (String[] row : records) {
+                    if (row[0].equalsIgnoreCase(empNo)) {
+                       found = true; 
+                        
+                        
+                        System.out.println("Current Name: " + row[2] + " " + row[1]);
+                        System.out.print("Enter new First Name (or press ENTER to keep): ");
+                        String newFirst = scan.nextLine();
+                        System.out.print("Enter new Last Name (or press ENTER to keep): ");
+                        String newLast = scan.nextLine();
+
+                            if (!newFirst.isEmpty()) row[2] = newFirst;
+                            if (!newLast.isEmpty()) row[1] = newLast;
+
+                            System.out.println("Profile updated successfully for Employee " + empNo);
+                //            return;
+                       
+                        try (CSVWriter writer = new CSVWriter (new FileWriter(csvFile))) {
+                            writer.writeAll(records);
+                            System.out.println("Changes saved to CSV file.");
+                       } catch (Exception e) {
+                            System.out.println("Error saving updates: " + e.getMessage());
+                        }
+                    } else if (!found) {
+                        System.out.println("Employee not found.");
+                    }
+                
+                }
+        }
+            
+            
+ }
+        
+
  
