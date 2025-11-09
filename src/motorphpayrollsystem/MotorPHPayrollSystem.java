@@ -118,7 +118,9 @@ public class MotorPHPayrollSystem {
                         System.out.print("\nPress ENTER to return to the menu...");
                         scan.nextLine(); // wait for user
                         break;
-                        case 0: System.out.println("Logging Out..."); break;
+                        case 0: System.out.println("Logging Out...");
+                        System.exit(0);
+                        break;
                         default: System.out.println("Invalid option!");
                     }
             
@@ -262,20 +264,22 @@ public class MotorPHPayrollSystem {
             double[] attendance = getAttendance(empNo);
             int daysWorked = (int) attendance[0];
             double overtimeHours = attendance[1];
+  
             
-            double dailyRate = basicSalary / 22; //assumed workdays per month
-            double grossPay = (daysWorked * dailyRate)
+           // double dailyRate = basicSalary / 2; //assumed workdays per month
+            double grossPay = (basicSalary / 2)
                                 + riceSubsidy + phoneAllowance + clothingAllowance 
                                 + (overtimeHours * hourlyRate * 1.25); 
             
+            double overtimePay = overtimeHours * hourlyRate * 1.25;
             double totalDeductions = sss(grossPay) + philHealth(basicSalary) + pagIbig(basicSalary) + tax(grossPay); 
             
             double netPay = grossPay - totalDeductions;
 
-            showPayslip(emp, daysWorked, overtimeHours, grossPay, totalDeductions, netPay);
+            showPayslip(emp, daysWorked, overtimeHours, overtimePay, grossPay, totalDeductions, netPay);
         }
 
-        public static void showPayslip(String[] emp, int daysWorked, double overtimeHours, double grossPay, 
+        public static void showPayslip(String[] emp, int daysWorked, double overtimeHours, double overtimePay, double grossPay, 
                                         double totalDeductions, double netPay){
         
             System.out.println("\n================== PAYSLIP ==================");
@@ -284,6 +288,7 @@ public class MotorPHPayrollSystem {
             System.out.println("Position: " + emp[11]);
             System.out.println("Days Worked: " + daysWorked);
             System.out.println("Overtime Hours: " + overtimeHours);
+            System.out.println("Overtime Pay: " + overtimePay);
             System.out.printf("Gross Pay: %.2f%n", grossPay);
             System.out.printf("Total Deductions: %.2f%n", totalDeductions);
             System.out.printf("Net Pay: %.2f%n", netPay);
@@ -472,7 +477,7 @@ public class MotorPHPayrollSystem {
                         System.out.print("\nPress ENTER to return to the menu...");
                         scan.nextLine(); // wait for user
                         break;
-                        case 0: System.out.println("Logging Out..."); break;
+                        case 0: 
                         default: System.out.println("Invalid option!");
                     } 
             
@@ -589,12 +594,20 @@ public class MotorPHPayrollSystem {
                        } catch (Exception e) {
                             System.out.println("Error saving updates: " + e.getMessage());
                         }
-                    } else if (!found) {
-                        System.out.println("Employee not found.");
+                        
+                        return;
+                        } 
+                   
                     }
                 
+                    if (!found) {
+                        System.out.println("Employee not found.");
                 }
-        }
+
+                
+
+
+        } 
             
             
  }
